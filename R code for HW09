@@ -1,0 +1,138 @@
+# Ch.7 C8
+# (1)
+load("~/Desktop/R data sets for 5e/loanapp.RData")
+attach(data)
+n_white <- subset(white,white>0)
+length(white)
+# [1] 1989
+length(n_white)
+# [1] 1681
+n_nonwhite <- subset(white,white<1)
+length(n_nonwhite)
+# [1] 308
+# So it is positive.
+
+# (2)
+# use OLS
+fit <- lm(approve ~ white)
+library(stargazer)
+stargazer(fit, type = "text", dep.var.labels = c("approve"), covariate.labels=c("white"), out="models.doc")
+# it is statistically significant at 99% level. It is practically large, since ß^ = 0.201 > 5%
+
+# (3)
+fit2 <- lm(approve ~ white + hrat + obrat + loanprc + unem + male + married + dep + sch + cosign + chist + pubrec + mortlat1 + mortlat2 + vr)
+stargazer(fit, fit2, type = "text", dep.var.labels = c("approve"),covariate.labels=c("white"), out="models.doc")
+# The coefficient is smaller. the se is unchanged
+
+# It is also statistically significant at 99% level.
+
+# (4)
+whiteobrat <- white*obrat
+# fit3 <- lm(approve ~ white + whiteobrat)
+fit3 <- lm(approve ~whiteobrat + white + hrat + obrat + loanprc + unem + male + married + dep +
+             sch + cosign + chist + pubrec + mortlat1 + mortlat2 + vr)
+summary(fit3)
+## In fact, it continues on part (2).
+stargazer(fit3, type = "text", out="models.doc")
+stargazer(fit3, type = "html", out="models.doc")
+# Its p-value is 0.002, it is statistically significant at 99% level.
+
+# (5)
+whiteobrat32 <- white*(obrat-32)
+## Set it in a combination, if not, you cannot run it.
+fit4 <- lm(approve ~whiteobrat32 + white + hrat + obrat + loanprc + unem + male + married + dep +
+             sch + cosign + chist + pubrec + mortlat1 + mortlat2 + vr)
+stargazer(fit4, type = "text",
+          ci = T, ci.custom = NULL,ci.level = 0.95,
+          out="models.doc")
+summary(fit4)
+# Ch.8 C7
+# (1)
+library(sandwich)
+library(lmtest)
+coeftest(fit2, vcov = vcovHC(fit2, type = "HC0"))
+stargazer(fit2, coeftest(fit2, vcov = vcovHC(fit2, type = "HC0")), type = "text", covariate.labels=c("white"), out="models.doc")
+stargazer(fit2, coeftest(fit2, vcov = vcovHC(fit2, type = "HC0")), type = "text", covariate.labels=c("white"), ci = T, ci.level = 0.95, out="models.doc")
+
+# (2)
+approve_hat <- predict(fit2) # same with heter
+n_white0 <- subset(approve_hat,approve_hat<0)
+length(n_white0)
+# [1] 0
+n_white1 <- subset(approve_hat,approve_hat>1)
+length(n_white1)
+# [1] 213
+# we cannot directly apply WLS, as hi will be negative in 213 cases.
+
+# Ch.17 C2
+# (1)
+probit1 <- glm(approve ~ white, family = binomial(probit), x = T)
+stargazer(fit, probit1, type = "text", covariate.labels=c("white"), out="models.doc")
+help(Normal)
+pnorm(1.331, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE) # Z(white=1) = .784+0.547 = 1.331.
+# [1] 0.9084055
+pnorm(0.547, mean = 0, sd = 1, lower.tail = TRUE, log.p = FALSE) # Z(white=0) = 0.547
+predict(probit1)
+# [1] 0.7078106
+max(predict(probit1))
+
+# (2)
+probit2 <- glm(approve ~ white + hrat + obrat + loanprc + unem + male +  married + dep +
+               sch + cosign + chist + pubrec + mortlat1 + mortlat2 + vr,
+               family = binomial(probit),
+               x = T)
+stargazer(probit2, type = "text", covariate.labels=c("white"), out="models.doc")
+stargazer(probit2, type = "html", covariate.labels=c("white"), out="models.doc")
+
+# (3)
+logit2 <- glm(approve ~ white + hrat + obrat + loanprc + unem + male + married + dep +
+                sch + cosign + chist + pubrec + mortlat1 + mortlat2 + vr,
+              family = binomial(logit),
+              x = T)
+stargazer(probit2, logit2, type = "text", covariate.labels=c("white"), out="models.doc")
+
+# (4)
+# install.packages("erer")
+library(erer)
+# The average marginal effects in Probit:
+ame_p2 = maBina(probit2, x.mean=F, rev.dum=T, digits = 4)
+ame_p2
+# The results (Intercept)  0.3424
+# effect  error t.value p.value
+# (Intercept)  0.3424 0.0510  6.7202  0.0000
+# white        0.1057 0.0238  4.4372  0.0000
+# hrat         0.0013 0.0012  1.1202  0.2628
+# obrat       -0.0046 0.0010 -4.5209  0.0000
+# loanprc     -0.1680 0.0393 -4.2773  0.0000
+# unem        -0.0061 0.0029 -2.0750  0.0381
+# male        -0.0059 0.0172 -0.3421  0.7323
+# married      0.0455 0.0171  2.6619  0.0078
+# dep         -0.0082 0.0065 -1.2707  0.2040
+# sch          0.0024 0.0156  0.1527  0.8786
+# cosign       0.0132 0.0348  0.3783  0.7052
+# chist        0.1214 0.0241  5.0352  0.0000
+# pubrec      -0.1868 0.0404 -4.6201  0.0000
+# mortlat1    -0.0341 0.0521 -0.6543  0.5130
+# mortlat2    -0.1076 0.0897 -1.1995  0.2305
+# vr          -0.0333 0.0138 -2.4109  0.0160
+ame_l2 = maBina(logit2, x.mean=F, rev.dum=T, digits = 4)
+ame_l2
+# The results (Intercept)  0.3358
+# effect  error t.value p.value
+# (Intercept)  0.3358 0.0508  6.6105  0.0000
+# white        0.0967 0.0225  4.3012  0.0000
+# hrat         0.0012 0.0011  1.0289  0.3037
+# obrat       -0.0047 0.0010 -4.7274  0.0000
+# loanprc     -0.1682 0.0398 -4.2315  0.0000
+# unem        -0.0059 0.0029 -2.0302  0.0425
+# male        -0.0051 0.0156 -0.3273  0.7435
+# married      0.0424 0.0160  2.6514  0.0081
+# dep         -0.0080 0.0065 -1.2398  0.2152
+# sch          0.0033 0.0143  0.2290  0.8189
+# cosign       0.0098 0.0315  0.3121  0.7550
+# chist        0.1133 0.0231  4.9058  0.0000
+# pubrec      -0.1677 0.0388 -4.3209  0.0000
+# mortlat1    -0.0275 0.0462 -0.5949  0.5520
+# mortlat2    -0.1003 0.0853 -1.1753  0.2400
+# vr          -0.0283 0.0127 -2.2174  0.0267
+stargazer(ame_p2, ame_l2, type = "text", covariate.labels=c("white"), out="models.doc")
