@@ -1,0 +1,15 @@
+rm(list=ls())
+library(sandwich) 
+library(lmtest) 
+load("~/Desktop/R data sets for 5e/hprice1.RData")
+attach(data)
+nrow(data)
+# [1] 88
+C2 = lm(price~lotsize + sqrft + bdrms)
+C21 = lm(log(price)~log(lotsize) + log(sqrft) + bdrms)
+# use the code "coeftest(C2, vcov = vcovHC)", find the resource, the link: http://www.inside-r.org/packages/cran/lmtest/docs/coeftest
+# I am wrong because I use the t test of coefficients
+coeftest(C2, vcov = vcovHC(C2, type = "HC0")); coeftest(C21, vcov = vcovHC(C21, type = "HC0"))
+summary(C2); summary(C21)
+summary(predict(C2)); summary(predict(C21))
+round(var(predict(C2)),4); round(var(predict(C21)),4)
