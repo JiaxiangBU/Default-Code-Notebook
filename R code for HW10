@@ -1,0 +1,60 @@
+# Ch.9 C1
+# (1)
+load("~/Desktop/R data sets for 5e/ceosal1.RData")
+attach(data)
+head(desc)
+rosneg <- as.numeric(ros<0)
+rosneg[1:5]
+newdata <- cbind(data, rosneg)
+newdata[1:5,]
+fit <-lm(lsalary ~ lsales + roe + rosneg, data=newdata)
+summary(fit)
+
+library(lmtest)
+library(stargazer)
+reset(fit, power = 2:3,type = c("fitted"))
+
+fitt <- fitted(fit)
+y2 <- fitt^2
+y3 <- fitt^3
+fit2 <- lm(lsalary ~ lsales + roe + rosneg + y2 + y3, data=newdata)
+library(sandwich)
+coeftest(fit2, vcov = vcovHC(fit2, type = "HC0"))
+# stargazer(fit,fit2,coeftest(fit2, vcov = vcovHC(fit2, type = "HC0")), type = "text", dep.var.labels = c("lsalary"), out="models.doc")
+# (2)
+library(car)
+# heteroskedasticity-robust F-type statistic in R
+linearHypothesis(fit2,c("y2=0","y3=0"),vcov=vcovHC(fit2,type="HC0"))
+# Ch.9 C2
+load("~/Desktop/R data sets for 5e/wage2.RData")
+attach(data)
+head(desc)
+fit3 <- lm(lwage ~ educ + exper + tenure + married + south + urban + black + KWW
+            # +KWW*educ
+            )
+fit4 <- lm(lwage ~ educ + exper + tenure + married + south + urban + black + IQ + KWW)
+stargazer(fit3, fit4, type = "text", out="models.doc")
+fit5 <- lm(lwage ~ educ + exper + tenure + married + south + urban + black)
+anova(fit4,fit5)
+
+# Ch.13 C3
+load("~/Desktop/R data sets for 5e/kielmc.RData")
+attach(data)
+nrow(desc)
+desc[1:25,]
+# 16, 13, 17, 20
+desc[13:20,]
+fit6 <- lm(lprice ~ y81 + ldist + y81ldist)
+stargazer(fit6, type = "text", out="models.doc")
+# Add age, age2, rooms, baths, log(intst), log(land), and log(area) to the equation.
+fit7 <- lm(lprice ~ y81 + ldist + y81ldist + age + agesq + rooms + baths + lintst + lland + larea)
+stargazer(fit6, fit7, type = "text", out="models.doc")
+summary(fit6)
+summary(fit7)
+
+# (4)
+# fit8 <- lm(ldist ~ age + agesq + rooms + baths + lintst + lland + larea)
+# stargazer(fit8, type = "text", out="models.doc")
+cor(ldist,lintst)
+cor(ldist,lland)
+cor(ldist,larea)
