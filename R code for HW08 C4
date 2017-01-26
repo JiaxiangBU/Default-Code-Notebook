@@ -1,0 +1,27 @@
+load("~/Desktop/R data sets for 5e/vote1.RData")
+attach(data)
+C4 <- lm(voteA ~ prtystrA + democA + lexpendA + lexpendB, data=data)
+u_hat <- resid(C4)
+C42 <- lm(u_hat~ prtystrA + democA + lexpendA + lexpendB, data=data)
+summary(C4)
+summary(C42)
+
+## cor
+round(var(u_hat),4);round(var(predict(u_hat)),4)
+mean(u_hat)
+u_hatsq <- u_hat^2
+mean(u_hatsq)
+# [1] 56.01786
+myvars=c("prtystrA","democA","lexpendA","lexpendB")
+newdata=data[myvars]
+newdata2 <- cbind(newdata, u_hat)
+cor(newdata2)
+
+## BP-test
+C43 <- lm(u_hat^2~ prtystrA + democA + lexpendA + lexpendB)
+summary(C43)
+
+## Use White test
+voteAsq <- voteA*voteA
+C44 <- lm(u_hat ~ voteA + voteAsq)
+summary(C44)
