@@ -1,0 +1,41 @@
+load("~/Desktop/R data sets for 5e/gpa1.RData")
+attach(data)
+head(data)
+
+# (i) 
+## find u_hat
+C8 <- lm(colGPA ~ hsGPA + ACT + skipped + PC)
+u_hat <- resid(C8)
+
+# (ii)
+## use colGPA_hat not colGPA
+## use function, predict or fitted
+colGPA_hat <- predict(C8)
+colGPA_hatsq <- colGPA_hat*colGPA_hat
+
+C82 <- lm(u_hat^2 ~ colGPA_hat + colGPA_hatsq)
+
+summary(C8)
+summary(C82)
+
+library(vars)
+library(het.test)
+
+# (iii)
+## verify
+min(colGPA_hat)
+hi_hat <- predict(C82)
+summary(hi_hat)
+
+## set weight = 1/hi_hat
+C83 <- lm(colGPA ~ hsGPA + ACT + skipped + PC, weights = 1/hi_hat)
+### skip h_hat2 <- 1/w, it is a bug
+summary(C83)
+
+# (iv)
+## test the process of reducing heteroskedasticity is efficient
+C84 <- lm(u_hat^2 ~ hsGPA + ACT + skipped + PC, weights = 1/hi_hat)
+summary(C84)
+## so redo heteroskedasticity development
+## use coeftest
+coeftest(C83, vcov = vcovHC(C83, type = "HC0"))
