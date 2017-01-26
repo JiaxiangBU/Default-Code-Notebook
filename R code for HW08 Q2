@@ -1,0 +1,10 @@
+# C2
+attach(Workbook2)
+fit <- lm(GPAy ~ ACTx)
+summary(fit)
+# The data is written on Ch.3 of the textbook.
+
+GPAy2 <- GPAy/ACTx
+ACTx2 <- 1/ACTx
+fit2 <- lm(GPAy2 ~ ACTx2)
+summary(fit2)
