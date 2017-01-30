@@ -32,3 +32,7 @@ mydata <- rename(mydata, c(oldname="newname"))
 # changing the ones you need to change.the limitation is that you need to enter all of them!
 names(data) <- c("Num","Gender","F1", "F2","M1","M2","GPA","DQ","PV","SV","SR","RQ")
                  # But I think it is a little bit waste of time.
+
+# When do a regression with dummy variable, use as.factor()
+fit <- lm(y ~ x + as.factor(z))
+                 
