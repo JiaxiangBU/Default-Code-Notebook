@@ -1,0 +1,79 @@
+---
+title: "Deal with JSON"
+author: "Jiaxiang Li"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+# JSON
+
+JSON — short for JavaScript Object Notation — is a format for sharing data. As its name suggests, JSON is derived from the JavaScript programming language, but it’s available for use by many other languages.
+
+JSON is a lightweight text-based open standard data-interchange *format.* It is human readable. A lot of data on the web are not available in tabular format. And sometimes you don’t want to go to the website such as https://ihis.ipums.org/ihis/ and select the data you need. Instead data are dynamically provided by a web server to a web browser based on queries or requests and you can write a program to select and download the data.
+
+Example: https://www.bloomberg.com/markets/api/bulk-time-series/price/GOOGL%3AUS?timeFrame=1_MONTH
+
+```{r results='hide'}
+if(!require(jsonlite)){
+  install.packages("jsonlite")
+  require(jsonlite)
+}
+```
+
+* This is a smart code, I will use it. Because I avoid repeating installation.
+
+```{r results='hide'}
+googlejson <- fromJSON("https://www.bloomberg.com/markets/api/bulk-time-series/price/GOOGL%3AUS?timeFrame=1_MONTH")
+
+toJSON(googlejson, pretty=TRUE)
+```
+
+Let’s break that down a bit:
+
+* Each object is surrounded by curly braces. The entire JSON response is itself an object so it is surrounded by braces. It contains objects: id, dateTimeRanges, price, timeZoneObject and so on.
+
+* price is a JSON inside a JSON. Data can be nested within the JSON format by using square brackets [ ].
+
+* Each object may have multiple name/value pairs separated by a comma. Name/value pairs may represent a single value (as with “id”) or multiple values in an array (as with “price”). Note the use of the colon separating the name from the associated value(s).
+
+* As you can see, JSON has a very simple structure and format, once you’re able to break it down.
+
+## citibikenyc data
+
+```{r}
+citibike <- fromJSON("http://citibikenyc.com/stations/json")
+# summary(citibike)
+```
+
+## Problem
+
+Create a dataframe `stations` using `citibike` to produce a map of stations.
+
+```{r}
+stations <- data.frame(citibike)
+# head(stations)
+# names(stations)
+```
+
+You will then use `stations` here:
+
+```{r}
+if(!require(leaflet)){
+  install.packages("leaflet")
+  require(leaflet)
+}
+```
+
+```{r}
+map<-leaflet(stations)
+map<-addTiles(map)
+map<-addMarkers(map, stations$stationBeanList.longitude, stations$stationBeanList.latitude, popup = stations$stationBeanList.stationName)
+map
+```
+
+* `Error in stations$longitude : $ operator is invalid for atomic vectors`  may happen.
+
+```{r}
+is.atomic(stations$longitude)
+```
