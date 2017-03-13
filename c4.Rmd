@@ -1,0 +1,69 @@
+---
+title: "Build Dataset of Portofio"
+author: "Jiaxiang Li"
+date: "March 13, 2017"
+output:
+  pdf_document:
+    toc: yes
+---
+
+```{r}
+rm(list=ls())
+```
+
+```{r}
+ticker <- read.csv("/Users/JiaxiangLi/Desktop/data/ticker.csv",stringsAsFactors = F)
+ticker <- ticker[1:2,]
+ticker
+```
+
+```{r}
+start_year <- 2017; start_month <- 3; start_day <- 1
+end_year <- 2017;end_month <- 3; end_day <- 11
+```
+
+```{r}
+ticker$price_url <- paste("http://chart.finance.yahoo.com/table.csv?s=",ticker$Symbol,"&a=",start_month-1,"&b=",start_day,"&c=",start_year,"&d=",end_month-1,"&e=",end_day,"&f=",end_year,"&g=d&ignore=.csv",sep = "")
+ticker$dividend_url <-paste("http://chart.finance.yahoo.com/table.csv?s=",ticker$Symbol,"&a=",start_month-1,"&b=",start_day,"&c=",start_year,"&d=",end_month-1,"&e=",end_day,"&f=",end_year,"&g=v&ignore=.csv",sep = "")
+# View(ticker)
+```
+
+```{r}
+output <- data.frame()
+output$price <- list()
+output$dividend <- list()
+price <- list()
+dividend <- list()
+```
+
+```{r}
+library(quantmod)
+```
+
+Set a function
+
+```{r}
+yahoo.read <- function(url){
+  data <- read.csv(url,stringsAsFactors = F)
+  data$Date <- as.Date(data$Date)
+    return(data)
+}
+```
+
+You can change the start date in for loop. I chose "2017-03-01".
+
+```{r}
+data <- list()
+for(i in 1:length(ticker$Symbol)){
+  try(setSymbolLookup(TEMP=list(name=paste0(ticker$Symbol[i]))))
+  TEMP <- getSymbols("TEMP",src = "yahoo",from = "2017-03-01", to = Sys.Date(),auto.assign = FALSE)
+  TEMP <- data.frame(TEMP) # pick index, pls `data.frame it.
+  TEMP <- cbind(variable=row.names(TEMP),TEMP)
+  data[ticker$Symbol[i]]<-list(TEMP)
+ }
+```
+
+```{r}
+data$BIL
+```
+
