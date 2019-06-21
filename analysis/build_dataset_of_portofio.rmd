@@ -2,14 +2,8 @@
 title: "Build Dataset of Portofio"
 author: "Jiaxiang Li"
 date: "March 13, 2017"
-output:
-  pdf_document:
-    toc: yes
+output: html_document
 ---
-
-```{r}
-rm(list=ls())
-```
 
 ```{r}
 ticker <- read.csv("/Users/JiaxiangLi/Desktop/data/ticker.csv",stringsAsFactors = F)
