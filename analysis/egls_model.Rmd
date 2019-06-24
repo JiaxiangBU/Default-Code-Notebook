@@ -1,10 +1,8 @@
-# Description
-# Wooldridge, J. M. (2012). Introductory econometrics: A modern approach
-# This is my 1st textbook I learn in econometries, which is useful.
-# I will share my code for the questions for some chapters.
-# This is for EGLS model, at the p378, on the Ch.8.
+This is for EGLS model, at the @Wooldridge2012[Chapter 8, pp. 378].
 
 # Check Heteroscedasticity.
+
+```{r}
 library(wooldridge)
 attach(smoke)
 fit <-
@@ -12,19 +10,31 @@ fit <-
 res <- resid(fit)
 res.1 <-
     lm(log(res ^ 2) ~ log(income) + log(cigpric) + educ + age + agesq + restaurn)
+```
+
 
 # find LM stat (like F test)
+
+```{r}
 library(sandwich)
 library(lmtest)
 bptest(fit) # Check LM stat
+```
 
 # EGLS way
+
+```{r}
 g <- fitted(res.1)
 h <- exp(g)
 
 fit2 <-
     lm(cigs ~ log(income) + log(cigpric) + educ + age + agesq + restaurn,
        weights = 1 / h)
+# fit2.0 <-
+#     lm(cigs ~ I(log(income)/h) + I(log(cigpric)/h) + I(educ/h) + I(age/h) + I(agesq/h) + I(restaurn/h))
+# 结果不对
 library(stargazer)
-stargazer(fit, res.1, fit2, # This is a well-viewed code for Word, install library(stargazer).
-          type = "text", out = "models.docx")
+stargazer(fit, fit2, type = "text")
+```
+
+
